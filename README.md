@@ -10,7 +10,10 @@ is a real worked example — open it in a browser to see the finished result.
 
 ## Install
 
-Clone this repo directly into your SISEnterprise checkout's skills folder, named
+This repo is **private** — ask the owner to add you as a collaborator (GitHub repo →
+Settings → Collaborators) before `git clone` will work for you.
+
+Once you have access, clone it directly into your SISEnterprise checkout's skills folder, named
 `status-dashboard`:
 
 ```bash
@@ -31,5 +34,12 @@ clone/copy rather than something that comes through `git pull` there.)
 ## Use
 
 Open Claude Code in your SISEnterprise repo and either run `/status-dashboard <environmentAlias>
-<workItemId>` or just ask in plain language — Claude will pick up the skill from its
-description in `SKILL.md`.
+<workItemId> [appNames...]` or just ask in plain language — Claude will pick up the skill from
+its description in `SKILL.md`. Example:
+
+```
+/status-dashboard 346957e1 346957 EMA EO DistributedJobCoordinator
+```
+
+`appNames` is optional — if you leave it off, Claude will ask which apps and which optional
+sections (Hangfire, Service Bus) are actually relevant to your story before pulling anything.
