@@ -1,7 +1,7 @@
 ---
 name: status-dashboard
-description: Build and publish a live-data status dashboard Artifact for a dev/test environment (logs, Hangfire jobs, Service Bus subscriptions) tied to a work item — the reusable version of the process used for env 346957e1 / work item 346957.
-args: "<environmentAlias> <workItemId> [appNames...]"
+description: Build and publish a live-data status dashboard Artifact for a dev/test environment (logs, Hangfire jobs, Service Bus subscriptions) — only an environment alias is required, work item id is auto-derived when possible. The reusable version of the process used for env 346957e1 / work item 346957.
+args: "<environmentAlias> [workItemId] [appNames...]"
 ---
 
 # Status dashboard for an environment / work item
@@ -21,8 +21,12 @@ needs to run this skill in their own session — it produces a new artifact they
 
 ## Inputs
 
-- `environmentAlias` — e.g. `346957e1`. Ask if not given.
-- `workItemId` — e.g. `346957`. Ask if not given.
+- `environmentAlias` — e.g. `346957e1`. **The only required input.** Ask if not given.
+- `workItemId` — e.g. `346957`. Optional: environment aliases almost always follow the
+  `{workItemId}e{N}` pattern, so first try stripping the trailing `e{N}` suffix from
+  `environmentAlias` (e.g. `346957e1` → `346957`) and use that. Only ask the user directly if
+  the alias doesn't match that pattern (no trailing `e{N}`, or the remaining prefix isn't
+  numeric) — don't silently guess in that case.
 - `appNames` — which apps to cover (e.g. `EMA EO DistributedJobCoordinator`). If not given, ask
   the user which apps are actually relevant to their story — don't default to covering every app
   in the repo. Valid app folder names under the environment's file share: `EMA`, `EO`,

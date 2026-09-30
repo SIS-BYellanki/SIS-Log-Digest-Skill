@@ -34,12 +34,19 @@ clone/copy rather than something that comes through `git pull` there.)
 ## Use
 
 Open Claude Code in your SISEnterprise repo and either run `/status-dashboard <environmentAlias>
-<workItemId> [appNames...]` or just ask in plain language — Claude will pick up the skill from
-its description in `SKILL.md`. Example:
+[workItemId] [appNames...]` or just ask in plain language — Claude will pick up the skill from
+its description in `SKILL.md`. Only `environmentAlias` is required. Example:
+
+```
+/status-dashboard 346957e1
+```
+
+`workItemId` is optional — it's auto-derived from the alias's `{workItemId}e{N}` pattern
+(`346957e1` → `346957`) and only asked for if the alias doesn't match that shape. `appNames` is
+also optional — if you leave it off, Claude will ask which apps and which optional sections
+(Hangfire, Service Bus) are actually relevant to your story before pulling anything. You can
+still pass everything explicitly if you already know it:
 
 ```
 /status-dashboard 346957e1 346957 EMA EO DistributedJobCoordinator
 ```
-
-`appNames` is optional — if you leave it off, Claude will ask which apps and which optional
-sections (Hangfire, Service Bus) are actually relevant to your story before pulling anything.
