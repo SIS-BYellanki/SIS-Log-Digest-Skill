@@ -1,5 +1,5 @@
 ---
-name: status-dashboard
+name: sis-log-digest
 description: Build and publish a live-data status dashboard Artifact for a dev/test environment (logs, Hangfire jobs, Service Bus subscriptions) — only an environment alias is required, work item id is auto-derived when possible. The reusable version of the process used for env 346957e1 / work item 346957.
 args: "<environmentAlias> [workItemId] [appNames...]"
 ---
