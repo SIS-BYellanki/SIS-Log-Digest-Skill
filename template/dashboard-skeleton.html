@@ -1,0 +1,217 @@
+<!-- TODO: <title> -> "Environment {alias} Status" -->
+<title>Environment {alias} Status</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f4f5f7; --surface:#ffffff; --border:#dfe3e8; --fg:#1a1f29; --fg-muted:#5b6472;
+  --accent:#3454d1; --accent-soft:#e8ecfc;
+  --ok:#1a8a53; --ok-soft:#e3f5ec;
+  --warn:#a2650a; --warn-soft:#fbf0dd;
+  --crit:#c22b3f; --crit-soft:#fbe6e9;
+  --info:#4a5568; --info-soft:#eceef1;
+  --font-display:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  --font-body:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#14171c; --surface:#1c2027; --border:#2c313a; --fg:#eceff3; --fg-muted:#9aa3b0;
+    --accent:#7c94ff; --accent-soft:#232c4d;
+    --ok:#4fd18b; --ok-soft:#16301f;
+    --warn:#f0b545; --warn-soft:#3a2c0e;
+    --crit:#f36b7f; --crit-soft:#3a1a20;
+    --info:#aab3c0; --info-soft:#262b33;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#14171c; --surface:#1c2027; --border:#2c313a; --fg:#eceff3; --fg-muted:#9aa3b0;
+  --accent:#7c94ff; --accent-soft:#232c4d;
+  --ok:#4fd18b; --ok-soft:#16301f;
+  --warn:#f0b545; --warn-soft:#3a2c0e;
+  --crit:#f36b7f; --crit-soft:#3a1a20;
+  --info:#aab3c0; --info-soft:#262b33;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);padding-inline:20px;padding-block:28px 48px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;border-bottom:1px solid var(--border);padding-bottom:20px}
+h1{font-family:var(--font-display);font-size:1.7rem;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.eyebrow{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:0 0 6px}
+.snapshot-meta{font-family:var(--font-mono);font-size:.8rem;color:var(--fg-muted);text-align:right;line-height:1.5}
+.snapshot-meta b{color:var(--fg);font-weight:600}
+
+.glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.pill-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.pill-card .label{font-size:.78rem;color:var(--fg-muted);font-weight:500}
+.status{display:inline-flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.78rem;font-weight:600;padding:3px 9px;border-radius:99px;width:fit-content}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.status.ok{background:var(--ok-soft);color:var(--ok)}
+.status.warn{background:var(--warn-soft);color:var(--warn)}
+.status.crit{background:var(--crit-soft);color:var(--crit)}
+.status.info{background:var(--info-soft);color:var(--info)}
+.pill-card .detail{font-size:.82rem;color:var(--fg-muted)}
+
+section.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.card-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+h2{font-family:var(--font-display);font-size:1.05rem;font-weight:600;margin:0}
+.card-sub{font-size:.82rem;color:var(--fg-muted);margin:0}
+
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{text-align:left;font-weight:600;color:var(--fg-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;padding:0 10px 8px;border-bottom:1px solid var(--border)}
+td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.mono{font-family:var(--font-mono);font-size:.82rem}
+.num{font-variant-numeric:tabular-nums;text-align:right}
+.table-scroll{overflow-x:auto}
+.table-scroll table{min-width:560px}
+
+.filter-box{font-family:var(--font-mono);font-size:.78rem;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;overflow-x:auto;white-space:pre;color:var(--fg-muted)}
+.filter-box.crit{color:var(--crit);border-color:color-mix(in srgb, var(--crit) 40%, var(--border))}
+.filter-box.ok{color:var(--ok);border-color:color-mix(in srgb, var(--ok) 40%, var(--border))}
+
+.env-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.env-block{border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.env-block h3{font-family:var(--font-mono);font-size:.85rem;margin:0;font-weight:600}
+.log-line{font-family:var(--font-mono);font-size:.74rem;color:var(--fg-muted);line-height:1.5;word-break:break-word}
+.log-line b{color:var(--warn);font-weight:600}
+
+.actions{display:flex;flex-direction:column;gap:2px}
+.action-row{display:grid;grid-template-columns:auto 1fr auto;align-items:start;gap:12px;padding:12px 4px;border-bottom:1px solid var(--border);text-decoration:none;color:inherit}
+.action-row:last-child{border-bottom:none}
+.action-rank{font-family:var(--font-mono);font-size:.72rem;color:var(--fg-muted);padding-top:2px}
+.action-body h3{margin:0 0 3px;font-size:.92rem;font-weight:600}
+.action-body p{margin:0;font-size:.82rem;color:var(--fg-muted);line-height:1.5}
+.action-jump{font-family:var(--font-mono);font-size:.72rem;color:var(--accent);white-space:nowrap;padding-top:2px}
+
+.log-details{margin-top:2px}
+.log-details summary{font-family:var(--font-mono);font-size:.74rem;color:var(--accent);cursor:pointer;font-weight:600;padding:4px 0;list-style:none}
+.log-details summary::-webkit-details-marker{display:none}
+.log-details summary::before{content:"\25B8  ";display:inline-block}
+.log-details[open] summary::before{content:"\25BE  "}
+.log-full{font-family:var(--font-mono);font-size:.68rem;line-height:1.6;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px;margin:8px 0 0;max-height:420px;overflow-y:auto;overflow-x:hidden;white-space:pre-wrap;word-break:break-word}
+.log-l{display:block;color:var(--fg-muted)}
+.log-l.warn{color:var(--warn)}
+.log-l.err{color:var(--crit);font-weight:600}
+
+.note{font-size:.85rem;color:var(--fg-muted);border-left:3px solid var(--accent);padding:4px 0 4px 12px}
+.note.warn{border-color:var(--warn)}
+.gap-banner{background:var(--warn-soft);border:1px solid color-mix(in srgb, var(--warn) 30%, var(--border));border-radius:10px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.gap-banner .label{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--warn);font-weight:600}
+.gap-banner p{margin:0;font-size:.86rem;color:var(--fg)}
+
+footer{font-size:.78rem;color:var(--fg-muted);text-align:center;padding-top:8px}
+
+@media (max-width:640px){
+  header{flex-direction:column;align-items:flex-start}
+  .snapshot-meta{text-align:left}
+}
+</style>
+
+<div class="wrap">
+
+  <header>
+    <div>
+      <!-- TODO: eyebrow -> "{project} · work item {workItemId}" -->
+      <p class="eyebrow">SISEnterprise &middot; work item {workItemId}</p>
+      <!-- TODO: h1 -> "Environment {alias} Status" -->
+      <h1>Environment {alias} Status</h1>
+    </div>
+    <div class="snapshot-meta">
+      <!-- TODO: snapshot timestamp, always in UTC -->
+      Snapshot as of <b>{YYYY-MM-DD ~HH:MM UTC}</b><br>
+      Not live &mdash; ask Claude to refresh for current numbers
+    </div>
+  </header>
+
+  <!-- TODO: Action items - one <a class="action-row"> per finding, ranked by severity,
+       most urgent first. Omit the whole section if there's nothing worth flagging. -->
+  <section class="card">
+    <div class="card-head">
+      <h2>Action items</h2>
+      <p class="card-sub">Ranked by urgency &middot; click to jump to detail</p>
+    </div>
+    <div class="actions">
+      <a class="action-row" href="#SECTION-ANCHOR">
+        <span class="action-rank">1</span>
+        <div class="action-body">
+          <h3><span class="status crit" style="font-size:.68rem;margin-right:6px">critical</span>TODO finding title</h3>
+          <p>TODO finding detail, with <span class="mono">CodeIdentifiers</span> in mono.</p>
+        </div>
+        <span class="action-jump">TODO section &rarr;</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- TODO: one pill per app/component actually covered below -->
+  <div class="glance">
+    <div class="pill-card">
+      <span class="label">TODO app name</span>
+      <span class="status ok">TODO status</span>
+      <span class="detail">TODO one-line detail</span>
+    </div>
+  </div>
+
+  <!-- TODO: one .env-block per app in scope. Delete this whole <section> if no logs
+       are relevant to this story. -->
+  <section class="card" id="environment-overview">
+    <div class="card-head">
+      <h2>Environment overview</h2>
+      <p class="card-sub">TODO provisioning metadata, e.g. <span class="mono">EnvironmentAlias: {alias}</span></p>
+    </div>
+    <div class="env-grid">
+      <div class="env-block">
+        <h3>TODO app name</h3>
+        <p class="log-line">TODO size/count summary</p>
+        <p class="log-line">TODO notable findings, in prose</p>
+        <!-- Leave this <details> block's <pre> EMPTY here; scripts/splice.js fills it in. -->
+        <details class="log-details">
+          <summary>View full log &middot; 0 lines, newest first</summary>
+          <pre class="log-full" id="log-TODOID"></pre>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- TODO: Hangfire section - include only if Step 0 said Hangfire jobs are in scope.
+       Delete this whole <section> otherwise. See reference/hangfire-queries.md. -->
+  <section class="card" id="hangfire-jobs">
+    <div class="card-head">
+      <h2>Hangfire jobs</h2>
+      <p class="card-sub">TODO query scope / time window</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Job</th><th>Status</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">TODO</td><td>TODO</td><td>TODO</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TODO: Service Bus section - include only if Step 0 said subscriptions are in scope.
+       Delete this whole <section> otherwise. See reference/service-bus-filters.md. -->
+  <section class="card" id="servicebus">
+    <div class="card-head">
+      <h2>Service Bus &middot; TODO topic name</h2>
+      <p class="card-sub">TODO namespace</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Subscription</th><th>Filter</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">TODO</td><td class="filter-box ok">TODO EnvironmentAlias = '...'</td><td>TODO</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>Generated via the <span class="mono">status-dashboard</span> skill &middot; snapshot, not live</footer>
+
+</div>
